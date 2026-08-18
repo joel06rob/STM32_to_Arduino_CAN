@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,6 +61,42 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+//CAN variable setup
+CAN_TxHeaderTypeDef TxHeader;
+CAN_RxHeaderTypeDef RxHeader;
+
+uint8_t TxData[8];
+uint8_t RxData[8];
+
+uint32_t TxMailbox;
+
+//an EXTI (User Button) press function for sending data to the Arduino via CAN
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+
+	if (GPIO_Pin == GPIO_PIN_13){
+
+		//UART
+		char msg[100];
+
+		//CAN
+		TxData[0] = 100;
+		TxData[1] = 10;
+
+		//UART
+		sprintf(msg, "CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1],TxMailbox);
+		HAL_UART_Transmit(&huart2,(uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+
+		HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
+
+
+	}
+
+
+
+
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -94,6 +131,20 @@ int main(void)
   MX_CAN1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_CAN_Start(&hcan1);
+
+  //TODO: TESTING - Added the CAN_IT_MAILBOX_EMPTY for now to verify CAN Tx
+  HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_ERROR | CAN_IT_LAST_ERROR_CODE | CAN_IT_BUSOFF);
+
+
+  //CAN Tx Data
+  TxHeader.DLC = 2; //Data length
+  TxHeader.IDE = CAN_ID_STD; //Standard length Identifier
+  TxHeader.RTR = CAN_RTR_DATA;
+  TxHeader.StdId = 0x446; //ID for the F446RE
+
+
 
   /* USER CODE END 2 */
 
@@ -274,6 +325,70 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+//CAN MAILBOXES - CHECKING FOR MESSAGES SENT FROM STM32
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hcan);
+
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
+            user file
+   */
+  	  char msg[] = "[CAN TX COMPLETE] Mailbox 0\r\n";
+
+      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hcan);
+
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
+            user file
+   */
+  	 char msg[] = "[CAN TX COMPLETE] Mailbox 1\r\n";
+
+     HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hcan);
+
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
+            user file
+   */
+  	 char msg[] = "[CAN TX COMPLETE] Mailbox 2\r\n";
+
+  	 HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+
+
+//HANDLE CAN ERRORS
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hcan);
+
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_CAN_ErrorCallback could be implemented in the user file
+   */
+  uint32_t error = HAL_CAN_GetError(hcan);
+
+  char msg[100];
+
+  sprintf(msg, "[CAN ERROR] HAL error = 0x%08lX\r\n", error);
+
+  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg),HAL_MAX_DELAY);
+
+}
 
 /* USER CODE END 4 */
 
