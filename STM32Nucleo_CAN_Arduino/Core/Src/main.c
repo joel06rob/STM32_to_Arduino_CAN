@@ -83,7 +83,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		TxData[1] = 10;
 
 		//UART
-		sprintf(msg, "CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1],TxMailbox);
+		sprintf(msg, "[STM32]CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1],TxMailbox);
 		HAL_UART_Transmit(&huart2,(uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 
 		HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
@@ -343,6 +343,26 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+//CAN RECEIVE - Callback for receiving messages
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hcan);
+
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_CAN_RxFifo0MsgPendingCallback could be implemented in the
+            user file
+   */
+  char msg[150];
+
+  HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &RxHeader, RxData);
+
+  sprintf(msg, "[UNOQ][CAN RX] ID=0x%03lX DLC=%lu DATA=%02X %02X\r\n", RxHeader.StdId, RxHeader.DLC, RxData[0], RxData[1]);
+
+  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+
 //CAN MAILBOXES - CHECKING FOR MESSAGES SENT FROM STM32
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
 {
@@ -353,7 +373,7 @@ void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
             the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
             user file
    */
-  	  char msg[] = "[CAN TX COMPLETE] Mailbox 0\r\n";
+  	  char msg[] = "[STM32][CAN TX COMPLETE] Mailbox 0\r\n";
 
       HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
@@ -367,7 +387,7 @@ void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
             the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
             user file
    */
-  	 char msg[] = "[CAN TX COMPLETE] Mailbox 1\r\n";
+  	 char msg[] = "[STM32][CAN TX COMPLETE] Mailbox 1\r\n";
 
      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
@@ -381,7 +401,7 @@ void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
             the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
             user file
    */
-  	 char msg[] = "[CAN TX COMPLETE] Mailbox 2\r\n";
+  	 char msg[] = "[STM32][CAN TX COMPLETE] Mailbox 2\r\n";
 
   	 HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
@@ -401,7 +421,7 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 
   char msg[100];
 
-  sprintf(msg, "[CAN ERROR] HAL error = 0x%08lX\r\n", error);
+  sprintf(msg, "[STM32][CAN ERROR] HAL error = 0x%08lX\r\n", error);
 
   HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg),HAL_MAX_DELAY);
 
