@@ -22,7 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,32 +72,8 @@ uint8_t RxData[8];
 
 uint32_t TxMailbox;
 
-//an EXTI (User Button) press function for sending data to the Arduino via CAN
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-
-	if (GPIO_Pin == GPIO_PIN_13){
-
-		//UART
-		char msg[100];
-
-		//CAN
-		TxData[0] = 100;
-		TxData[1] = 10;
-
-		//UART
-		sprintf(msg, "[STM32]CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1],TxMailbox);
-		HAL_UART_Transmit(&huart2,(uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-
-		HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
-
-
-	}
-
-
-
-
-
-}
+uint8_t intMIN = 0;
+uint8_t intMAX = 254;
 
 /* USER CODE END 0 */
 
@@ -107,7 +85,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	srand(time(NULL));
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -342,6 +320,30 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+//an EXTI (User Button) press function for sending data to the Arduino via CAN
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+
+	if (GPIO_Pin == GPIO_PIN_13){
+
+		//UART
+		char msg[100];
+
+		//CAN
+		TxData[0] = intMIN + rand() % (intMAX + 1 - intMIN);;
+		TxData[1] = intMIN + rand() % (intMAX + 1 - intMIN);;
+
+		//UART
+		sprintf(msg, "[STM32]CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1],TxMailbox);
+		HAL_UART_Transmit(&huart2,(uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+
+		HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
+
+
+	}
+
+
+}
 
 //CAN RECEIVE - Callback for receiving messages
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
