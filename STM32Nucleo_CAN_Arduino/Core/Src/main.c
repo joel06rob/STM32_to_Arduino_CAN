@@ -57,7 +57,7 @@ static void MX_GPIO_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+uint8_t Get_RandomData();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,7 +110,11 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_CAN_Start(&hcan1);
+
+
+  if (HAL_CAN_Start(&hcan1) != HAL_OK){
+	  Error_Handler();
+  }
 
   //TODO: TESTING - Added the CAN_IT_MAILBOX_EMPTY for now to verify CAN Tx
   HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_ERROR | CAN_IT_LAST_ERROR_CODE | CAN_IT_BUSOFF);
@@ -326,23 +330,44 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	if (GPIO_Pin == GPIO_PIN_13){
 
+		HAL_StatusTypeDef canStatus;
+
+		//CAN
+		TxData[0] = Get_RandomData();
+		TxData[1] = Get_RandomData();
+
 		//UART
 		char msg[100];
 
-		//CAN
-		TxData[0] = intMIN + rand() % (intMAX + 1 - intMIN);;
-		TxData[1] = intMIN + rand() % (intMAX + 1 - intMIN);;
+		canStatus = HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
 
-		//UART
-		sprintf(msg, "[STM32]CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1],TxMailbox);
+		if (canStatus == HAL_OK){
+
+			//UART - Successful CAN Tx
+			sprintf(msg, "[STM32]CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1],TxMailbox);
+
+		}
+		else{
+
+			//UART - Error
+			sprintf(msg, "[STM32][ERROR] HAL Status=%d CAN Error=0x%08lX\r\n", canStatus, HAL_CAN_GetError(&hcan1));
+		}
+
+
 		HAL_UART_Transmit(&huart2,(uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-
-		HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
 
 
 	}
 
 
+}
+
+//CAN RANDOM DATA - Get a random data byte
+uint8_t Get_RandomData(){
+
+	uint8_t randomint = intMIN + rand() % (intMAX + 1 - intMIN);
+
+	return randomint;
 }
 
 //CAN RECEIVE - Callback for receiving messages
@@ -357,9 +382,17 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
    */
   char msg[150];
 
-  HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &RxHeader, RxData);
+  if (HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK){
 
-  sprintf(msg, "[UNOQ][CAN RX] ID=0x%03lX DLC=%lu DATA=%02X %02X\r\n", RxHeader.StdId, RxHeader.DLC, RxData[0], RxData[1]);
+	  sprintf(msg, "[UNOQ][CAN RX] ID=0x%03lX DLC=%lu DATA=%02X %02X\r\n", RxHeader.StdId, RxHeader.DLC, RxData[0], RxData[1]);
+
+  }
+  else{
+
+	  sprintf(msg, "[STM32][ERROR] Rx Error=0x%08lX\r\n", HAL_CAN_GetError(&hcan1));
+  }
+
+
 
   HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
@@ -423,7 +456,7 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 
   char msg[100];
 
-  sprintf(msg, "[STM32][CAN ERROR] HAL error = 0x%08lX\r\n", error);
+  sprintf(msg, "[STM32][ERROR] HAL error = 0x%08lX\r\n", error);
 
   HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg),HAL_MAX_DELAY);
 
