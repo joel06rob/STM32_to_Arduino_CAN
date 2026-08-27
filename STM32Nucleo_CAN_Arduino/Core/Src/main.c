@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,7 +49,7 @@ CAN_HandleTypeDef hcan1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+volatile bool canTxComplete = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,7 +117,7 @@ int main(void)
 	  Error_Handler();
   }
 
-  //TODO: TESTING - Added the CAN_IT_MAILBOX_EMPTY for now to verify CAN Tx
+  //Enable CAN interrupts (Receivem, Transmit, Errors)
   HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_TX_MAILBOX_EMPTY | CAN_IT_ERROR | CAN_IT_LAST_ERROR_CODE | CAN_IT_BUSOFF);
 
 
@@ -137,6 +138,18 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	//Blink LED if flag is set
+	if (canTxComplete){
+
+		canTxComplete = false;
+
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+		HAL_Delay(100);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+
+	}
+
   }
   /* USER CODE END 3 */
 }
@@ -230,12 +243,12 @@ static void MX_CAN1_Init(void)
   //CAN Filter Config (Rx)
   CAN_FilterTypeDef canfilterconfig;
 
-  canfilterconfig.FilterActivation = CAN_FILTER_ENABLE;
+  canfilterconfig.FilterActivation = CAN_FILTER_ENABLE; //Activate Filter
   canfilterconfig.FilterBank = 10;  // anything between 0 to SlaveStartFilterBank
   canfilterconfig.FilterFIFOAssignment = CAN_RX_FIFO0; //Any CAN frame msg that passes filter is placed in this buffer
-  canfilterconfig.FilterIdHigh = 0x101<<5;
+  canfilterconfig.FilterIdHigh = 0x101<<5; //Filter only the Uno Q ID (101)
   canfilterconfig.FilterIdLow = 0x0000;
-  canfilterconfig.FilterMaskIdHigh = 0x7FF<<5;
+  canfilterconfig.FilterMaskIdHigh = 0x7FF<<5; //11 Bits
   canfilterconfig.FilterMaskIdLow = 0x0000;
   canfilterconfig.FilterMode = CAN_FILTERMODE_IDMASK; //Set filter to check ID+Mask
   canfilterconfig.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -408,6 +421,9 @@ void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
             the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
             user file
    */
+  	  //Set flag to true for LED
+  	  canTxComplete = true;
+
   	  char msg[] = "[STM32][CAN TX COMPLETE] Mailbox 0\r\n";
 
       HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
@@ -422,6 +438,9 @@ void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
             the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
             user file
    */
+  	 //Set flag to true for LED
+   	 canTxComplete = true;
+
   	 char msg[] = "[STM32][CAN TX COMPLETE] Mailbox 1\r\n";
 
      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
@@ -436,6 +455,9 @@ void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
             the HAL_CAN_TxMailbox0CompleteCallback could be implemented in the
             user file
    */
+  	 //Set flag to true for LED
+   	 canTxComplete = true;
+
   	 char msg[] = "[STM32][CAN TX COMPLETE] Mailbox 2\r\n";
 
   	 HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
