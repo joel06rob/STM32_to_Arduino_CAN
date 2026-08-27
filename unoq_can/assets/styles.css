@@ -1,0 +1,30 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+#canWaveform {
+    display: block;
+    margin-bottom: 20px;
+}
+
+#canFrame {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 16px;
+    max-width: 900px;
+}
+
+#canFrame p {
+    display: contents;
+    margin: 0;
+}
+
+#canFrame p::first-line {
+    font-weight: bold;
+}
+
+#canFrame span {
+    font-family: monospace;
+    word-break: break-all;
+}

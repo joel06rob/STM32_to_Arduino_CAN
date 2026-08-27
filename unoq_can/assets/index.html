@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+
+    <canvas id="canWaveform" width="2400" height="300"></canvas>
+    <div id="canFrame">
+      <p>SOF: <span id="sof"></span></p>
+      <p>ID: <span id="canid"></span></p>
+      <p>RTR: <span id="rtr"></span></p>
+      <p>IDE: <span id="ide"></span></p>
+      <p>R: <span id="r"></span></p>
+      <p>DLC: <span id="dlc"></span></p>
+      <p>DATA: <span id="data"></span></p>
+    </div>
+    
+
+    <script src="https://cdn.socket.io/4.8.3/socket.io.min.js" integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0" crossorigin="anonymous"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
