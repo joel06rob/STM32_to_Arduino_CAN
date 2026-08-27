@@ -122,7 +122,7 @@ int main(void)
 
 
   //CAN Tx Data
-  TxHeader.DLC = 2; //Data length
+  TxHeader.DLC = 8; //Data length
   TxHeader.IDE = CAN_ID_STD; //Standard length Identifier
   TxHeader.RTR = CAN_RTR_DATA;
   TxHeader.StdId = 0x446; //ID for the F446RE
@@ -345,9 +345,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 		HAL_StatusTypeDef canStatus;
 
-		//CAN
+		//CAN Data
 		TxData[0] = Get_RandomData();
 		TxData[1] = Get_RandomData();
+		TxData[2] = Get_RandomData();
+		TxData[3] = Get_RandomData();
+		TxData[4] = Get_RandomData();
+		TxData[5] = Get_RandomData();
+		TxData[6] = Get_RandomData();
+		TxData[7] = Get_RandomData();
 
 		//UART
 		char msg[100];
@@ -357,7 +363,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		if (canStatus == HAL_OK){
 
 			//UART - Successful CAN Tx
-			sprintf(msg, "[STM32]CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1],TxMailbox);
+			sprintf(msg, "[STM32]CAN QUEUED MSG ID=0x%03lX DLC=%lu DATA=%02X %02X %02X %02X %02X %02X %02X %02X Mailbox=%lu\r\n", TxHeader.StdId, TxHeader.DLC, TxData[0], TxData[1], TxData[2], TxData[3], TxData[4], TxData[5], TxData[6], TxData[7], TxMailbox);
 
 		}
 		else{
