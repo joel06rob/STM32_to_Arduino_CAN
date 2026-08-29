@@ -10,6 +10,16 @@ Additionally, the Uno Q also transmits a response frame back to the STM32 upon r
 
 Demo Video:
 
+https://github.com/user-attachments/assets/c1ea9784-5494-4056-84b2-3ac4cee3b823
+
+<img width="1330" height="545" alt="P2CAN_Waveform" src="https://github.com/user-attachments/assets/0971f032-98bc-4968-9396-3b770a9ed949" />
+<img width="4032" height="3024" alt="P2_wiring" src="https://github.com/user-attachments/assets/0a13d266-c186-4eac-be66-b251e40e8ed7" />
+
+
+
+
+
+
 
 ## Why I Built This
 
@@ -20,6 +30,8 @@ Another motivation was that I did not have access to a CAN analyzer or oscillosc
 ## System Architecture
 
 Diagram:
+<img width="2010" height="1181" alt="P2 CAN proj" src="https://github.com/user-attachments/assets/281247ed-85ea-4135-a050-049e8879ece7" />
+
 
 Hardware:
 - STM32F446RE Nucleo
