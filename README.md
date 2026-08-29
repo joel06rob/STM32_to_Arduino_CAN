@@ -30,7 +30,8 @@ Another motivation was that I did not have access to a CAN analyzer or oscillosc
 ## System Architecture
 
 Diagram:
-<img width="2010" height="1181" alt="P2 CAN proj" src="https://github.com/user-attachments/assets/281247ed-85ea-4135-a050-049e8879ece7" />
+<img width="2010" height="1181" alt="P2_Diagramv2" src="https://github.com/user-attachments/assets/0109e9a8-7907-432a-bcf0-a43ff355b557" />
+
 
 
 Hardware:
