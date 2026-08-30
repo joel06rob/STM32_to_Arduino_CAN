@@ -80,9 +80,12 @@ Both the STM32 and the Arduino Uno Q are setup with CAN receive filters - The ST
 
 ## Challenges
 ### Setting Up Hardware
-Due to still learning electronics and embedded systems, setting up this required ensuring that every component was compatible, connected correctly and working as intended. An example of a challenge faced here was setting up the CAN transceivers paired with termination resistors.
+Due to still learning electronics and embedded systems, setting up this required ensuring that every component was compatible, connected correctly and working as intended. An example of a challenge faced here was setting up the CAN transceivers paired with termination resistors as I didn't have 120Ω so I had to pair two resistors together.
+
+### CAN transmit completion
+Initially, I only setup the firmware for the STM32 side of the project and had not setup the Arduino code yet. This meant when testing, I was not getting complete transmission messages. This was because the CAN relied on another active node to acknowledge the frames. After setting up the Arduino code, this was fixed.
 
 ## Future Improvements
 - Reconstruct the entire classical CAN Frame - Including CRC, ACK etc.
-- Add timestamps to received frames
-- 
+- Add timestamps to received frames.
+- Allow the UI to manipulate the data length of the CAN messages being sent.
